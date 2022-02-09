@@ -34,7 +34,7 @@ const getCategories = (record) => ({
 
 const getUserData = (record) => {
   const userData = {
-    name: record.getCellValue('Name'),
+    name: record.getCellValue('First Name'),
     id: record.getCellValue('ID'),
     categories: getCategories(record)
   };
@@ -49,8 +49,8 @@ const { records: totalRecords } = await tableUsers.selectRecordsAsync();
 const filteredRecords = totalRecords.filter((record) => record.id !== inputUserData.id);
 const potentialMatches = filteredRecords.map((record) => {
   const currentUserData = getUserData(record);
-  const score = getScoreBetweenTwoUsers(inputUserData.categories, currentUserData.categories);
-
+  let score = getScoreBetweenTwoUsers(inputUserData.categories, currentUserData.categories);
+  score *=100;
   return { ...currentUserData, score };
 });
 
@@ -58,13 +58,19 @@ const sortedPotentialMatches = potentialMatches.sort((a, b) => {
   return ((b.score > a.score) ? 1 : ((a.score > b.score) ? -1 : 0));
 });
 
-const removeAttributes = sortedPotentialMatches.map(({ id }) => ({ id }));
+const removeAttributes = sortedPotentialMatches.map(({ id })=> ({ id }));
 
 await tableUsers.updateRecordAsync(inputRecord.id, {
-  'Best Match': [removeAttributes[0]],
+  RecordID1: [removeAttributes[0]],
   RecordID2: [removeAttributes[1]],
   RecordID3: [removeAttributes[2]],
   RecordID4: [removeAttributes[3]],
   RecordID5: [removeAttributes[4]],
-  RecordID6: [removeAttributes[5]]
+  RecordID6: [removeAttributes[5]],
+  CP_RecordID1: sortedPotentialMatches[0].score,
+  CP_RecordID2: sortedPotentialMatches[1].score,
+  CP_RecordID3: sortedPotentialMatches[2].score,
+  CP_RecordID4: sortedPotentialMatches[3].score,
+  CP_RecordID5: sortedPotentialMatches[4].score,
+  CP_RecordID6: sortedPotentialMatches[5].score
 });
